@@ -51,24 +51,28 @@ score_2 = 0
 
 #funcje
 def paddle1_up():
-    y = paddle_1.ycor()
-    y += 20
-    paddle_1.sety(y)
+    if paddle_1.ycor() < 290:
+        y = paddle_1.ycor()
+        y += 20
+        paddle_1.sety(y)
 
 def paddle1_down():
-    y = paddle_1.ycor()
-    y -= 20
-    paddle_1.sety(y)
+    if paddle_1.ycor() > -290:
+        y = paddle_1.ycor()
+        y -= 20
+        paddle_1.sety(y)
 
 def paddle2_up():
-    y = paddle_2.ycor()
-    y += 20
-    paddle_2.sety(y)
+    if paddle_2.ycor() < 290:
+        y = paddle_2.ycor()
+        y += 20
+        paddle_2.sety(y)
 
 def paddle2_down():
-    y = paddle_2.ycor()
-    y -= 20
-    paddle_2.sety(y)
+    if paddle_2.ycor() > -290:
+        y = paddle_2.ycor()
+        y -= 20
+        paddle_2.sety(y)
 
 #przypisanie klawiszy
 game_window.listen()
