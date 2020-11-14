@@ -1,3 +1,6 @@
+#Autorzy - Norbert Daniluk, Piotr Palczewski
+#Projekt gry Pong z użyciem EasyAI
+
 import turtle
 import winsound
 
@@ -33,23 +36,24 @@ ball.shape("square")
 ball.color("white")
 ball.penup()
 ball.goto(0, 0)
-ball.dx = 2
-ball.dy = 2
+#piksele ruchu piłeczki - prędkość gry
+ball.dx = 6
+ball.dy = 6
 
-pen = turtle.Turtle()
-pen.speed(0)
-pen.shape("square")
-pen.color("white")
-pen.penup()
-pen.hideturtle()
-pen.goto(0, 260)
-pen.write("Player 1: 0  Player 2: 0", align="center", font=("Courier", 24, "normal"))
-
-#wyniki
+#wyświetlenie wyników
 score_1 = 0
 score_2 = 0
+show_score = turtle.Turtle()
+show_score.speed(0)
+show_score.shape("square")
+show_score.color("white")
+show_score.penup()
+show_score.hideturtle()
+show_score.goto(0, 260)
+show_score.write("Player 1: 0  Player 2: 0", align="center", font=("Courier", 24, "normal"))
 
-#funcje
+
+#funcje ruchu paletek
 def paddle1_up():
     if paddle_1.ycor() < 290:
         y = paddle_1.ycor()
@@ -74,12 +78,15 @@ def paddle2_down():
         y -= 20
         paddle_2.sety(y)
 
-#przypisanie klawiszy
+#czytanie klawiszy
 game_window.listen()
-game_window.onkeypress(paddle1_up, "w")
-game_window.onkeypress(paddle1_down, "s")
+#klawisze gracza 1
 game_window.onkeypress(paddle2_up, "Up")
 game_window.onkeypress(paddle2_down, "Down")
+#klawisze gracza 2
+game_window.onkeypress(paddle1_up, "w")
+game_window.onkeypress(paddle1_down, "s")
+
 
 #pętla gry
 while True:
@@ -95,30 +102,30 @@ while True:
     if ball.ycor()>290:
         ball.sety(290)
         ball.dy *= -1
-        winsound.PlaySound('bounce.wav', winsound.SND_ASYNC)
+        #winsound.PlaySound('bounce.wav', winsound.SND_ASYNC) #dzwięk odbijania piłeczki
     elif ball.ycor() < -290:
         ball.sety(-290)
         ball.dy *= -1
-        winsound.PlaySound('bounce.wav', winsound.SND_ASYNC)
+        #winsound.PlaySound('bounce.wav', winsound.SND_ASYNC) #dzwięk odbijania piłeczki
 
     #dla ścianek prawej i lewej
     if ball.xcor()>350:
         score_1 += 1
-        pen.clear()
-        pen.write("Player 1: {} Player 2 {}".format(score_1, score_2), align="center", font=("Courier", 24, "normal"))
+        show_score.clear()
+        show_score.write("Player 1: {} Player 2 {}".format(score_1, score_2), align="center", font=("Courier", 24, "normal"))
         ball.goto(0,0)
         ball.dx *= -1
     elif ball.xcor()<-350:
         score_2 += 1
-        pen.clear()
-        pen.write("Player 1: {} Player 2 {}".format(score_1, score_2), align="center", font=("Courier", 24, "normal"))
+        show_score.clear()
+        show_score.write("Player 1: {} Player 2 {}".format(score_1, score_2), align="center", font=("Courier", 24, "normal"))
         ball.goto(0, 0)
         ball.dx *= -1
 
     #odbijanie piłeczki
     if ball.xcor() < -340 and ball.ycor() < paddle_1.ycor() + 50 and ball.ycor() > paddle_1.ycor() - 50:
         ball.dx *= -1
-        winsound.PlaySound('bounce.wav', winsound.SND_ASYNC)
+        #winsound.PlaySound('bounce.wav', winsound.SND_ASYNC) #dzwięk odbijania piłeczki
     elif ball.xcor() > 340 and ball.ycor() < paddle_2.ycor() + 50 and ball.ycor() > paddle_2.ycor() - 50:
         ball.dx *= -1
-        winsound.PlaySound('bounce.wav', winsound.SND_ASYNC)
+        #winsound.PlaySound('bounce.wav', winsound.SND_ASYNC) #dzwięk odbijania piłeczki
