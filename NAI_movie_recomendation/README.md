@@ -45,6 +45,7 @@ $ npm run
 Most notable parts of code are:
 
 * '_pearson_score'
+
 Method used to compute Pearson score between two users. Uses arguments: user1 and user2 (as strings) and returns score (float).
 More about Pearson score please refere to this [link](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient).
 Below the mathematical part of the method:
@@ -79,7 +80,9 @@ return Sxy / np.sqrt(Sxx * Syy)
 ```
 
 * '_euclidean_score'
-Method used to compute euclidean distance between two users on Euclidean space (more [here](https://en.wikipedia.org/wiki/Euclidean_distance)). Uses arguments user1 and user2 (as strings) and returns score (as float).
+
+Method used to compute euclidean distance between two users on Euclidean space (more [here](https://en.wikipedia.org/wiki/Euclidean_distance)). 
+Uses arguments user1 and user2 (as strings) and returns score (as float).
 Method main function is:
 ```
  # squared difference between points (movies)
@@ -96,3 +99,38 @@ The result score is presented as:
 return 1 / (1 + np.sqrt(np.sum(squared_diff)))
 ```
 * 'find_recommendations'
+
+Method that finds the recommendations for primary user.
+Uses arguments:
+user (str, name of the user to find recomendation for)
+method (str, euclidean/pearson - choosing the method of the corelation score)
+points_for_best (int, minimum value of the score for recommended movies)
+points_for_wrost (int, maximum value of the score for not recommended movies)
+amount (int, the amount of movies to recommend per category)
+
+As a first step we find closest user in terms of movie taste using chosen method
+```
+users = self.find_closest_users(user, method)
+```
+Then app finds movies with best and worst score using points_for_best and points_for_worse as min or max score.
+```
+for _user in users:
+            unique_movies = self.find_unique_movies(user, _user)
+            for movie in unique_movies:
+                if (
+                    self._data[_user][movie] >= points_for_best
+                    and len(best_movies) < amount
+                ):
+                    best_movies.append(movie)
+
+                if (
+                    self._data[_user][movie] <= points_for_worst
+                    and len(worst_movies) < amount
+                ):
+                    worst_movies.append(movie)
+```
+Last part of this method is to make sure app found enough movies (that is found movies equal 'amount')
+```
+if len(best_movies) == amount and len(worst_movies) == amount:
+                    return {"best": list(best_movies), "worst": list(worst_movies)}
+```
