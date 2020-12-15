@@ -29,9 +29,6 @@ $ git clone https://github.com/https://github.com/PiotrPalczewski/NAI/tree/main/
 
 # Go into the repository
 $ cd NAI_movie_recomendation
-
-# Run the app
-$ npm run
 ```
 
 ## Features
