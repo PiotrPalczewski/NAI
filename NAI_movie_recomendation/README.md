@@ -8,6 +8,7 @@ Finding corelation beetwen users uploaded from .json file to recomend movies.
 * [Setup](#Setup)
 * [Features](#features)
 * [Code examples](#code-examples)
+* [Result](#Result)
 
 ## Introduction
 University project created to find corelation between data sets provided by users that watched and scored movies with main assumption that atleast some of the movies will be shared among users. 
@@ -134,3 +135,30 @@ Last part of this method is to make sure app found enough movies (that is found 
 if len(best_movies) == amount and len(worst_movies) == amount:
                     return {"best": list(best_movies), "worst": list(worst_movies)}
 ```
+
+## Result
+As we start the application we need to provide variables such as:
+```
+Give path of JSON file: 
+C:\Users\elron\Desktop\NAI_movie_recomendation\data.json
+Method (euclidean, pearson) [euclidean]: 
+euclidean
+User: 
+Pawel Czapiewski
+Points for worst movie (1, 10) [3]: 
+3
+Points for best movie (1, 10) [8]: 
+8
+Amount (1, 6) [6]: 
+5
+```
+Where:
+* Give path of JSON file: - refers to the path to the json data file
+* Method (euclidean, pearson): - chosing a method by which score will be calculated
+* User: - main user for which we want to find movie recomendation
+* Points for worst movie (1, 10) [3]: - the score that will be maximum of the "worst" movie criteria (suggested 3)
+* Points for best movie (1, 10) [8]: - the score that will be minimum of the "best" movie criteria (suggested 8)
+* Amount (1, 6) [6]: - how many recommendation to find (suggested 6)
+
+As a result we get:
+(https://user-images.githubusercontent.com/32613484/102261773-746a0b00-3f12-11eb-81d2-1e57d57149db.png)
