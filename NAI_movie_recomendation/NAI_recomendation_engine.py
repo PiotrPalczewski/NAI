@@ -1,5 +1,5 @@
-#Program autorstwa: Kacper Wojtasiński, Piotr Palczewski
-'''
+# Program autorstwa: Kacper Wojtasiński, Piotr Palczewski
+"""
 Program silnika rekomendacji filmów na podstawie pliku JSON 
 z danymi zebranymi od użytkowników składającego się z:
 "imie_nazwisko":{
@@ -16,7 +16,7 @@ i wybiera 6 filmów (o ile istnieją) których osoba dla której
 szukamy rekomendacji nie oglądała o ocenie powyżej 8 oraz 
 6 filmów o ocenie poniżej 3. Jeśli takowe filmy nie istnieją zostają 
 wyszukane u kolejnej najbliższej osoby.
-'''
+"""
 import json
 import click
 import numpy as np
@@ -30,57 +30,74 @@ class MoviesRecommendations:
 
     @classmethod
     def from_json_file(cls, path: str) -> "MoviesRecommendations":
+        """ class method to run recommendation for data in JSON file """
         with open(path) as _file:
             data = json.load(_file)
             return cls(data)
-    """ Pobieranie danych z pliku json oraz zwracanie danych """
+
     @staticmethod
     def sort_dict_for_user(user: str, _dict: dict) -> dict:
+        """helper static method to sort dicts related to given user
+
+        Args:
+            user (str): name of user
+            _dict (dict): dict to be sorted (descending order)
+
+        Returns:
+            dict: sorted dict (keys are sorted by values)
+        """
         _dict[user] = {
             key: value
             for key, value in sorted(
                 _dict[user].items(), key=lambda i: i[1], reverse=True
             )
         }
-    ''' Grupowanie danych w formie par przy użyciu funkcji Dictionary '''
 
     def validate_users(self, *users):
-    
+        """helper method to validate given users
+
+        Raises:
+            ValueError: when given user is not in data
+        """
         for user in users:
             if not user in self._data.keys():
-                raise ValueError(f"Cannot find {user} in dataset")
-    ''' Sprawdzenie czy użytkownik istnieje w pliku z danymi '''
-    
-    def _sort_movies_by_rating(self):
+                raise ValueError(f'Cannot find "{user}" in dataset')
 
+    def _sort_movies_by_rating(self):
+        """helper method to sort all the movies by the rating (descending order) """
         for user in self._data.keys():
             self.sort_dict_for_user(user, self._data)
-    ''' Sortowanie danych użytkownika po ocenie filmów '''
-    
-    
-    """ Metoda obliczenia korelacji osób metodą Person'a """
-    def _pearson_score(self, user1, user2):
+
+    def _pearson_score(self, user1: str, user2: str) -> float:
+        """method to compute Pearson score between two users
+
+        Args:
+            user1 (str): name of the user
+            user2 (str): name of the user
+
+        Returns:
+            float: score (the higher, the better)
+        """
         self.validate_users(user1, user2)
-    
-        # Filmy wspólne dla użytkownika szukającego rekomendacji i pozostałych użytkowników z bazy
+
         common_movies = {}
-        
-        # Pętla wyszukiwania wspólnych filmów
+
+        # finding common movies
         for item in self._data[user1]:
             if item in self._data[user2]:
                 common_movies[item] = 1
 
         num_ratings = len(common_movies)
 
-        # Przy braku wspólnych filmów użytkowników wynikiem korelacji jest 0
+        # when there are not any common movies, return 0
         if num_ratings == 0:
             return 0
 
-        # Obliczanie sumy ocen dzielonych filmów
+        # counting sums of common movies ratings
         user1_sum = np.sum([self._data[user1][item] for item in common_movies])
         user2_sum = np.sum([self._data[user2][item] for item in common_movies])
 
-        # Obliczanie sumy kwadratów ocen dzielonych filmów
+        # counting squared sums of common movies ratings
         user1_squared_sum = np.sum(
             [np.square(self._data[user1][item]) for item in common_movies]
         )
@@ -88,7 +105,6 @@ class MoviesRecommendations:
             [np.square(self._data[user2][item]) for item in common_movies]
         )
 
-        # Obliczanie sumy produków oceny wspólnych filmów
         sum_of_products = np.sum(
             [
                 self._data[user1][item] * self._data[user2][item]
@@ -96,7 +112,7 @@ class MoviesRecommendations:
             ]
         )
 
-        # Obliczanie współczynnika korelacji Pearsona
+        # getting Pearson's coefficients
         Sxy = sum_of_products - (user1_sum * user2_sum / num_ratings)
         Sxx = user1_squared_sum - np.square(user1_sum) / num_ratings
         Syy = user2_squared_sum - np.square(user2_sum) / num_ratings
@@ -106,27 +122,32 @@ class MoviesRecommendations:
 
         return Sxy / np.sqrt(Sxx * Syy)
 
+    def _euclidean_score(self, user1, user2) -> float:
+        """method to compute Euclidean score between two users
 
-    ''' Metoda obliczenia korelacji osób metodą euklidesową'''
-    def _euclidean_score(self, user1, user2):
+        Args:
+            user1 (str): name of the user
+            user2 (str): name of the user
+
+        Returns:
+            float: score (the higher, the better)
+        """
         self.validate_users(user1, user2)
 
-        # Filmy wspólne dla użytkownika szukającego rekomendacji i pozostałych użytkowników z bazy
         common_movies = {}
-        
-        # Pętla wyszukiwania wspólnych filmów
+
+        # finding common movies
         for item in self._data[user1]:
             if item in self._data[user2]:
                 common_movies[item] = 1
 
-        # Przy braku wspólnych filmów użytkowników wynikiem korelacji jest 0
+        # when there are not any common movies, return 0
         if len(common_movies) == 0:
             return 0
-        
-        #Różnica kwadratów odelgłości między punktami
+
+        # squared difference between points (movies)
         squared_diff = []
-    
-        #Pętla licząca różnice kwadratów odelgłości między punktami
+
         for item in self._data[user1]:
             if item in self._data[user2]:
                 squared_diff.append(
@@ -135,12 +156,19 @@ class MoviesRecommendations:
 
         return 1 / (1 + np.sqrt(np.sum(squared_diff)))
 
-    ''' Metoda wyszukiwania najbliższego użytkownika na przestrzeni dwuwymiarowej '''
-    def find_closest_users(self, name: str, method="euclidean"):
+    def find_closest_users(self, name: str, method="euclidean") -> dict:
+        """method to find the closest users for given user (based on score)
+
+        Args:
+            name (str): name of user to find the closest users based on
+            method (str): method of scoring ("euclidean", "pearson"). Defaults to "euclidean".
+
+        Returns:
+            dict: dict with the closest users for given user
+        """
         score_function = (
             self._euclidean_score if method == "euclidean" else self._pearson_score
         )
-
 
         if not name in self._closest_users[method]:
             self._closest_users[method][name] = {}
@@ -152,13 +180,20 @@ class MoviesRecommendations:
 
         return self._closest_users[method][name]
 
-    ''' Metoda wyszukiwania unikalnych filmów użytkownika '''
     def find_unique_movies(self, for_user, from_user) -> dict:
+        """method to find unique movies between users
+
+        Args:
+            for_user (str): name of user to find unique movies for
+            from_user (str): name of user to find unique movies from
+
+        Returns:
+            dict: dict with unique movies with ratings (sorted by ratings, in descending order)
+        """
         unique_movies_names = list(
             set(self._data[from_user].keys()) - set(self._data[for_user].keys())
         )
 
-    
         unique_movies = {key: self._data[from_user][key] for key in unique_movies_names}
 
         return {
@@ -167,19 +202,32 @@ class MoviesRecommendations:
                 unique_movies.items(), key=lambda i: i[1], reverse=True
             )
         }
-    
-    
-    ''' Metoda wyszukiwania rekomendowanych filmów dla wybranego użytkownika
-        wybraną metodą - euklidesową lub Pearsona'''
+
     def find_recommendations(
-        self, user, method: str, points_for_best, points_for_worst, amount
+        self,
+        user: str,
+        method: str,
+        points_for_best: int,
+        points_for_worst: int,
+        amount: int,
     ) -> dict:
+        """method to find movie recommendations for given user
+
+        Args:
+            user (str): name of user to find movie recommendations for
+            method (str): method of scoring ("euclidean" or "pearson")
+            points_for_best (int): minimum rating for "best" movie
+            points_for_worst (int): maximum rating for "worst" movie
+            amount (int): amount of movies (maximum), per category ("best", "worst")
+
+        Returns:
+            dict: dict with two lists ("best" and "worst")
+        """
         best_movies = []
         worst_movies = []
         users = self.find_closest_users(user, method)
 
-        
-    # Pętla wyszukiwania najlepszych i najgorszych filmów u użytkownika najbliższego profilowi
+        # looking for the "best" and "worst" movies for given user
         for _user in users:
             unique_movies = self.find_unique_movies(user, _user)
             for movie in unique_movies:
@@ -199,22 +247,42 @@ class MoviesRecommendations:
                     return {"best": list(best_movies), "worst": list(worst_movies)}
 
         return {"best": list(best_movies), "worst": list(worst_movies)}
-        
-''' Interfejs wprowadzania danych w wierszu poleceń '''
+
+
 @click.command()
 @click.option("--path", prompt="Give path of JSON file")
-@click.option("--method", prompt="Method", type=click.Choice(['euclidean', 'pearson']), default='euclidean')
+@click.option(
+    "--method",
+    prompt="Method",
+    type=click.Choice(["euclidean", "pearson"]),
+    default="euclidean",
+)
 @click.option("--user", prompt="User")
-@click.option("--min_value", prompt="Min value (1, 10)", type=click.IntRange(1, 10), default=3)
-@click.option("--max_value", prompt="Max value (1, 10)", type=click.IntRange(1,10), default=8)
+@click.option(
+    "--points_for_worst",
+    prompt="Points for worst movie (1, 10)",
+    type=click.IntRange(1, 10),
+    default=3,
+)
+@click.option(
+    "--points_for_best",
+    prompt="Points for best movie (1, 10)",
+    type=click.IntRange(1, 10),
+    default=8,
+)
 @click.option("--amount", prompt="Amount (1, 6)", type=click.IntRange(1, 6), default=6)
-
-
-def run(path, method, user, min_value, max_value, amount):
+def run(path, method, user, points_for_worst, points_for_best, amount):
+    """ method to run interactive mode provided by click"""
     r = MoviesRecommendations.from_json_file(path)
     r.validate_users(user)
-    print(r.find_recommendations(user, method, max_value, min_value, amount))
-''' Metoda wywoławcza'''
+
+    results = r.find_recommendations(
+        user, method, points_for_best, points_for_worst, amount
+    )
+
+    print(f'Movies recommended for {user}: {", ".join(results["best"])}')
+    print(f'Movies not recommended for {user}: {", ".join(results["worst"])}')
+
 
 if __name__ == "__main__":
     run()
