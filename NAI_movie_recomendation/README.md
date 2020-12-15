@@ -161,4 +161,5 @@ Where:
 * Amount (1, 6) [6]: - how many recommendation to find (suggested 6)
 
 As a result we get:
-(https://user-images.githubusercontent.com/32613484/102261773-746a0b00-3f12-11eb-81d2-1e57d57149db.png)
+
+![alt text](https://user-images.githubusercontent.com/32613484/102261773-746a0b00-3f12-11eb-81d2-1e57d57149db.png?raw=true)
